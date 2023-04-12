@@ -6,6 +6,9 @@ os.system("mkdir -p ../../output/day1")
 os.system("touch ../../gencode.v19.annotation_promoters.bed")
 out = open("../../output/day1/gencode.v19.annotation_promoters.bed", "w")
 
+# Metadata
+out.write("##description: Gencode human annotated genome v19 transformed to .bed format\n##date: 2023-04-12\n")
+
 for line in file:
 
     if line.startswith("##"):
