@@ -1,3 +1,5 @@
+##description: Gencode human annotated genome v19 transformed to .bed format
+##date: 2023-04-12
 chr1	11868	14412	DDX11L1_ENSG00000223972.4	0	+
 chr1	14362	29806	WASH7P_ENSG00000227232.4	0	-
 chr1	29553	31109	MIR1302-11_ENSG00000243485.2	0	+
