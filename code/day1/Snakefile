@@ -1,0 +1,69 @@
+import os
+
+rule all:
+	input:
+		"../../output/day1/tfbsCgiProm.bed",
+		"../../output/day1/tfbsNonCgiProm.bed"
+
+rule gtf_to_bed:
+	input:
+		"../../data/gencode.v19.annotation.gtf"
+	output:
+		"../../output/day1/gencode.v19.annotation_promoters.bed"
+	shell:
+		"python3.9 coding_exercises_day1_step02.py"
+
+checkpoint extract_promoters_and_calculate_overlap:
+	input:
+		"../../output/day1/gencode.v19.annotation_promoters.bed",
+		"../../data/cpgIslandExt.txt"
+	output:
+		directory("../../output/day1/CgiProm/"),
+		directory("../../output/day1/NonCgiProm/")
+	shell:
+		"./coding_exercises_day1_step03-04.sh"
+
+#input function to define all output samples in CgiProm and NonCgiProm directories
+def aggregate_input_cgi(wildcards):
+	checkpoint_output = checkpoints.extract_promoters_and_calculate_overlap.get(**wildcards).output[0]
+	return expand("../../output/day1/CgiProm/cpgIsland_promoters_intersection_{i}.bed",
+		i=glob_wildcards(os.path.join(checkpoint_output, "cpgIsland_promoters_intersection_{i}.bed")).i)
+
+def aggregate_input_noncgi(wildcards):
+	checkpoint_output = checkpoints.extract_promoters_and_calculate_overlap.get(**wildcards).output[1]
+	return expand("../../output/day1/NonCgiProm/cpgIsland_promoters_difference_{i}.bed",
+		i=glob_wildcards(os.path.join(checkpoint_output, "cpgIsland_promoters_difference_{i}.bed")).i)
+
+
+rule tfbs_to_gtf:
+	input:
+		"../../data/tfbsConsSites.txt"
+	output:
+		"../../output/day1/tfbsConsSites.bed"
+	shell:
+		"./coding_exercises_day1_step05.sh"
+
+
+rule tfbs_in_cpg:
+	input:
+		aggregate_input_cgi,
+		"../../output/day1/tfbsConsSites.bed"
+	output:
+		"../../output/day1/tfbsCgiProm.bed"
+	run:
+		for f in input:
+			os.system("./coding_exercises_day1_step06.sh " + f + " ../../output/day1/tfbsCgiProm.bed")
+
+rule tfbs_not_in_cpg:
+	input:
+		aggregate_input_noncgi,
+		"../../output/day1/tfbsConsSites.bed"
+	output:
+		"../../output/day1/tfbsNonCgiProm.bed"
+	run:
+		for f in input:
+			os.system("./coding_exercises_day1_step06.sh " + f + " ../../output/day1/tfbsNonCgiProm.bed")
+
+rule clean:
+	shell:
+		"rm -r ../../output/day1"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -x
+#set -x
 mkdir -p ../../output/day1
 
 # Format cpgIsland raw file

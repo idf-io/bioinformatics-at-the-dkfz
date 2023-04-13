@@ -1,6 +1,10 @@
 # Big files
 *.gtf
 tfbsConsSites.txt
+*.snakemake*
+output/day1/tfbsCgiProm.bed
+output/day1/tfbsNonCgiProm.bed
+output/day1/tfbsConsSites.bed
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,0 +1,91 @@
+---
+title: "Bioinformatics at the DKFZ - Hands-on session step 12"
+author: "Ian Dirk Fichtner"
+date: "April 30, 2023"
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_depth: 2
+    number_sections: true
+---
+
+```{r settings, include = FALSE}
+
+knitr::opts_chunk$set(
+    message = FALSE,
+    warning = FALSE
+)
+
+```
+
+
+**Research question: Which transcription factor binding sites are better conserved in CpG island promoters?**
+
+In steps 1-11 we formatted the GENCODE human genome promoter annotations and acquired the list of transcription factor binding sites (TFbs) that are present in promoters within CpG islands.
+
+The output were two datasets in BED format, one containing the TFbs in CpG islands and the other containing the TFbs found in non CpG island regions.
+
+To tackle the research question above, first, the dataset was loaded.
+
+```{r setup}
+library(tidyverse)
+
+# Datasets
+tfbs.cgi <- read.table("../../output/day1/tfbsCgiProm.bed", sep = "\t", col.names = c("chrom", "start", "stop", "name" , "score", "strand", "idk"))
+
+tfbs.noncgi <- read.table("../../output/day1/tfbsNonCgiProm.bed", sep = "\t", col.names = c("chrom", "start", "stop", "name", "score", "strand", "idk"))
+
+```
+
+Then, it was preprocessed.
+
+```{r preprocessing}
+
+chroms <- paste0("chr", append(1:22, c("X", "Y", "M")))
+
+tfbs.cgi <- tfbs.cgi %>% filter(chrom %in% chroms)
+tfbs.noncgi <- tfbs.noncgi %>% filter(chrom %in% chroms)
+
+tfbs <- rbind.data.frame(tfbs.cgi %>% mutate(cpg = "CpG-island"), tfbs.noncgi %>% mutate(cpg = "Non-CpG-island"))
+
+```
+
+Finally, the research question was tackled and all proportion of TFbs found in CpG islands was calculated for every TF.
+
+```{r}
+
+tfbs.cpg.props <- tfbs %>%
+    # Count TFbs by double grouping and format dataframe
+    group_by(name, cpg) %>%
+    summarise(count = n()) %>% 
+    pivot_wider(names_from = cpg, values_from = count, names_prefix = "counts_") %>% 
+    mutate(prop_CpG = `counts_CpG-island` / (`counts_CpG-island` + `counts_Non-CpG-island`)) %>%
+    # Calulate proportions
+    mutate(prop_nonCpG = `counts_Non-CpG-island` / (`counts_CpG-island` + `counts_Non-CpG-island`)) %>%
+    arrange(desc(prop_CpG))
+    
+tfbs.cpg.props %>% head
+
+```
+SP1 was found to be the TFbs found the most in CpG islands. This may be due to its role in cell differentiation, cell growth for which methylation regulation is crutial.
+
+Additionally, the proportino of TFbs in CpG islands was calculated showing that more than half of the TFbs were found in CpG island regions. This is corroborated by the current literature (Vavouri and Lehner 2012).
+
+
+```{r tf-cpgIsland-props}
+
+cpg.props <- tfbs %>% group_by(cpg) %>% summarise(count = n())
+
+cpg.props
+
+```
+
+
+```{r cpgIsland-props}
+
+pie(cpg.props$count, labels = cpg.props$cpg)
+
+```
+
+This sets into perspective the previous result. If TFbs are generally found in CpG islands ~50% of the time, SP1 with a proportion of 0.52% shows no great difference. This should be further inspected via hypothesis testing and a p-value. 
