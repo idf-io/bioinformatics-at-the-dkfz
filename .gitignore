@@ -1,5 +1,6 @@
 # Big files
 *.gtf
+tfbsConsSites.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
