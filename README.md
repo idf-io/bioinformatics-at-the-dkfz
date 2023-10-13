@@ -1,4 +1,4 @@
-# Bioinformatics at the DKFZ
+# Practical exercises for "Bioinformatics at the DKFZ" course
 
 > DKFZ  
 > Applied bioinformatics  
